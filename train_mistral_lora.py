@@ -29,16 +29,31 @@ def main():
     lora_config = LoraConfig(
         r=16,
         lora_alpha=32,
-        target_modules=["q_proj", "v_proj"],  # khusus untuk Mistral
+        target_modules=["q_proj", "v_proj"],  # modul utama Mistral
         lora_dropout=0.05,
         bias="none",
         task_type="CAUSAL_LM"
     )
     model = get_peft_model(model, lora_config)
 
-    # Load dataset contoh (ganti dengan dataset kamu sendiri)
-    dataset = load_dataset("wikitext", "wikitext-2-raw-v1")
-    logger.info(f"Dataset loaded: {dataset}")
+    # Load dataset JSONL
+    dataset = load_dataset(
+        "json",
+        data_files={"train": "data/logdata_wazuh_smart.jsonl"},
+        split="train"
+    )
+
+    # Pastikan ada field text
+    if "text" not in dataset.column_names:
+        logger.info("Mapping dataset field 'message' -> 'text'")
+        dataset = dataset.map(lambda x: {"text": x["message"]})
+
+    # Split train/validation (90/10)
+    dataset = dataset.train_test_split(test_size=0.1)
+    train_dataset = dataset["train"]
+    eval_dataset = dataset["test"]
+
+    logger.info(f"Dataset loaded: {len(train_dataset)} train, {len(eval_dataset)} eval")
 
     # Training arguments
     training_args = TrainingArguments(
@@ -51,7 +66,7 @@ def main():
         logging_steps=50,
         save_steps=500,
         save_total_limit=2,
-        bf16=True,  # kalau GPU support
+        bf16=True,  # H100 mendukung bf16
         optim="paged_adamw_32bit",
         warmup_ratio=0.03,
         lr_scheduler_type="cosine",
@@ -62,8 +77,8 @@ def main():
     trainer = SFTTrainer(
         model=model,
         tokenizer=tokenizer,
-        train_dataset=dataset["train"],
-        eval_dataset=dataset["validation"],
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
         args=training_args,
         dataset_text_field="text",
         max_seq_length=1024,
