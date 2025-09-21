@@ -1,0 +1,30 @@
+version: "3.9"
+services:
+  mistral-wazuh:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: mistral-wazuh
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/workspace/data
+      - ./outputs:/workspace/outputs
+      - ./logs:/workspace/logs
+    environment:
+      - HUGGINGFACE_TOKEN=${token_here}
+      - BASE_MODEL=mistralai/Mistral-7B-v0.1
+      - DATA_PATH=data/logdata_wazuh_smart.jsonl
+      - OUTPUT_DIR=outputs/mistral-lora
+      - CUDA_VISIBLE_DEVICES=0
+    shm_size: '16gb'  # Important for dataloader
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    ulimits:
+      memlock: -1
+      stack: 67108864
