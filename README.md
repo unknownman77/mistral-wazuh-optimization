@@ -1,0 +1,1 @@
+# mistral-wazuh-optimization
