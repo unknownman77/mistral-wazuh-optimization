@@ -1,77 +1,79 @@
-#!/usr/bin/env python3
-import os
 import logging
 from datasets import load_dataset
 from transformers import (
-    AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig,
-    TrainingArguments, Trainer, DataCollatorForLanguageModeling
+    AutoTokenizer,
+    AutoModelForCausalLM,
+    TrainingArguments,
 )
-from peft import LoraConfig, get_peft_model, TaskType, prepare_model_for_kbit_training
-import torch
+from peft import LoraConfig, get_peft_model
+from trl import SFTTrainer
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-MODEL_NAME = os.environ.get('BASE_MODEL', 'EleutherAI/gpt-neo-1.3B')
-DATA_PATH = os.environ.get('DATA_PATH', 'data/test_100.jsonl')
-OUTPUT_DIR = os.environ.get('OUTPUT_DIR', 'outputs/gpt-neo-lora-test')
+def main():
+    # Base model: Mistral-7B
+    model_name = "mistralai/Mistral-7B-v0.1"
+    logger.info(f"Loading model {model_name}")
 
-os.makedirs(OUTPUT_DIR, exist_ok=True)
-os.makedirs("logs", exist_ok=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer.pad_token = tokenizer.eos_token  # penting agar tidak error padding
 
-def format_example(example, tokenizer):
-    instruction = example.get('instruction', '')
-    response = example.get('response', '')
-    prompt = f"### Instruction:\n{instruction}\n\n### Response:\n{response}<|endoftext|>"
-    
-    return tokenizer(
-        prompt,
-        truncation=True,
-        max_length=512,  # Smaller for consistent batching
-        padding='max_length',
-        return_tensors=None
+    model = AutoModelForCausalLM.from_pretrained(
+        model_name,
+        device_map="auto",
+        torch_dtype="auto"
     )
 
-def main():
-    logger.info("Starting GPT-Neo fine-tuning")
-    
-    # Load data
-    ds = load_dataset('json', data_files=DATA_PATH)['train']
-    logger.info(f"Dataset: {len(ds)} examples")
-    
-    # Load tokenizer and model
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-    
-    model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, torch_dtype=torch.float16, device_map="auto")
-    
-    # LoRA config
+    # Apply LoRA
     lora_config = LoraConfig(
-        task_type=TaskType.CAUSAL_LM, r=16, lora_alpha=32, lora_dropout=0.1,
-        target_modules=["c_attn", "c_proj"], bias="none"
+        r=16,
+        lora_alpha=32,
+        target_modules=["q_proj", "v_proj"],  # khusus untuk Mistral
+        lora_dropout=0.05,
+        bias="none",
+        task_type="CAUSAL_LM"
     )
     model = get_peft_model(model, lora_config)
-    
-    # Prepare data
-    train_dataset = ds.map(lambda x: format_example(x, tokenizer), remove_columns=ds.column_names)
-    
-    # Training args
+
+    # Load dataset contoh (ganti dengan dataset kamu sendiri)
+    dataset = load_dataset("wikitext", "wikitext-2-raw-v1")
+    logger.info(f"Dataset loaded: {dataset}")
+
+    # Training arguments
     training_args = TrainingArguments(
-        output_dir=OUTPUT_DIR, num_train_epochs=2, per_device_train_batch_size=1,
-        gradient_accumulation_steps=16, learning_rate=2e-4, fp16=True,
-        logging_steps=5, save_steps=50, eval_strategy="no"
+        output_dir="./mistral-lora-finetuned",
+        per_device_train_batch_size=2,
+        gradient_accumulation_steps=8,
+        learning_rate=2e-4,
+        num_train_epochs=3,
+        logging_dir="./logs",
+        logging_steps=50,
+        save_steps=500,
+        save_total_limit=2,
+        bf16=True,  # kalau GPU support
+        optim="paged_adamw_32bit",
+        warmup_ratio=0.03,
+        lr_scheduler_type="cosine",
+        report_to="none"
     )
-    
+
     # Trainer
-    trainer = Trainer(
-        model=model, args=training_args, train_dataset=train_dataset,
-        data_collator=DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False),
+    trainer = SFTTrainer(
+        model=model,
+        tokenizer=tokenizer,
+        train_dataset=dataset["train"],
+        eval_dataset=dataset["validation"],
+        args=training_args,
+        dataset_text_field="text",
+        max_seq_length=1024,
+        packing=True
     )
-    
+
+    # Start training
+    logger.info("Starting Mistral-7B LoRA fine-tuning...")
     trainer.train()
-    trainer.save_model(OUTPUT_DIR)
-    logger.info("Training completed!")
+    logger.info("Training finished!")
 
 if __name__ == "__main__":
     main()
