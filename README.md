@@ -17,3 +17,25 @@ Repository ini berisi skrip untuk fine-tuning model **Mistral-7B** menggunakan *
 ```bash
 git clone <repo-url>
 cd mistral-wazuh-optimization
+```
+
+2. Jalankan setup environment
+```bash
+bash setup_env.sh
+```
+atau manual
+```bash
+python3.11 -m venv venv3.11
+source venv3.11/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+## Training
+```bash
+accelerate launch train_mistral_lora.py
+
+Dataset: data/logdata_wazuh_smart.jsonl
+Output checkpoint: mistral-lora-finetuned/
+Logs: logs/
+```
