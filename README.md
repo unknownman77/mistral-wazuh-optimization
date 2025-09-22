@@ -39,3 +39,48 @@ Dataset: data/logdata_wazuh_smart.jsonl
 Output checkpoint: mistral-lora-finetuned/
 Logs: logs/
 ```
+
+## Deploy Web App dengan Docker
+
+### 1. Build docker image:
+```bash
+docker-compose build
+```
+
+### 2. Jalankan container:
+```bash
+docker-compose up
+```
+
+### 3. Akses Web App:
+```bash
+http://<server-ip>:7070
+
+[Pastikan server punya GPU NVIDIA dan nvidia-docker2.]
+```
+
+### Pastikan requirements.txt terbaru
+```bash
+- Include semua dependency: `transformers`, `torch`, `trl`, `peft`, `flask`, dll.  
+- Gunakan versi yang stabil agar docker build tidak error.
+```
+
+### Struktur final GitHub-ready
+```bash
+mistral-wazuh-optimization/
+├── Dockerfile
+├── docker-compose.yml
+├── README.md
+├── requirements.txt
+├── .gitignore
+├── train_mistral_lora.py
+├── evaluate.py
+├── generate.py
+├── app.py
+├── setup_env.sh
+├── accelerate_config.yaml
+├── data/
+├── logs/
+├── eval/
+└── mistral-lora-finetuned/ (di .gitignore)
+```
