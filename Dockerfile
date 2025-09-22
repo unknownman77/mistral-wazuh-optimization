@@ -1,36 +1,34 @@
-FROM pytorch/pytorch:2.2.0-cuda12.1-cudnn8-devel
-# Gunakan -devel untuk build tools yang diperlukan
+# Base image dengan CUDA & cuDNN
+FROM nvidia/cuda:12.1.105-runtime-ubuntu22.04
+
+# Set environment
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV PYTHONUNBUFFERED=1
+ENV INFER_MODEL=/app/mistral-lora-finetuned
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    git \
-    wget \
-    build-essential \
-    software-properties-common \
-    && rm -rf /var/lib/apt/lists/*
+    python3.11 python3.11-venv python3-pip git wget curl unzip \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip
-RUN python -m pip install --upgrade pip
+# Set working directory
+WORKDIR /app
 
-# Install requirements first (for better caching)
-COPY requirements.txt /workspace/requirements.txt
-WORKDIR /workspace
+# Copy project files
+COPY . /app
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Setup virtual environment
+RUN python3.11 -m venv /app/venv
+ENV PATH="/app/venv/bin:$PATH"
 
-# Copy all files
-COPY . /workspace
+# Upgrade pip dan install requirements
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
 
-# Create necessary directories
-RUN mkdir -p /workspace/outputs /workspace/logs /workspace/data
+# Expose port Flask
+EXPOSE 8080
 
-# Set environment variables
-ENV PYTHONPATH=/workspace
-ENV CUDA_VISIBLE_DEVICES=0
-
-# Make scripts executable
-RUN chmod +x /workspace/*.py
-
-# Default command for API, override for training
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run Flask web app
+CMD ["python", "app.py"]
