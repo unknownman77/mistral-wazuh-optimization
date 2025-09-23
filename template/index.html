@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Wazuh Rule Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Wazuh Rule Generator</h1>
+        <form method="post">
+            <label>Paste your logs:</label>
+            <textarea name="log_text" placeholder="Enter your Wazuh logs here..."></textarea>
+            <button type="submit">Generate Rule</button>
+        </form>
+
+        {% if generated_rule %}
+        <h2>Generated Rule:</h2>
+        <pre>{{ generated_rule }}</pre>
+        {% endif %}
+    </div>
+</body>
+</html>
