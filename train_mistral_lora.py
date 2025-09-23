@@ -9,15 +9,15 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def main():
-    # 1. Load model
+    # load model
     model_name = "mistralai/Mistral-7B-v0.1"
     logger.info(f"Loading model {model_name}...")
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
     tokenizer.pad_token = tokenizer.eos_token
 
-    # Tentukan dtype otomatis: bf16 kalau tersedia, else fp16
-    if torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] >= 8:  # Ampere/Hopper+
+    # tentukan dtype otomatis: bf16 kalau tersedia, else fp16
+    if torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] >= 8:
         dtype = torch.bfloat16
         logger.info("Using bf16 for training")
     else:
@@ -30,7 +30,7 @@ def main():
         torch_dtype=dtype
     )
 
-    # 2. Apply LoRA
+    # apply LoRA
     lora_config = LoraConfig(
         r=16,
         lora_alpha=32,
@@ -41,7 +41,7 @@ def main():
     )
     model = get_peft_model(model, lora_config)
 
-    # 3. Load dataset
+    # load dataset
     dataset = load_dataset(
         "json",
         data_files={"train": "data/logdata_wazuh_smart.jsonl"},
@@ -49,7 +49,7 @@ def main():
     )
     dataset = dataset.map(lambda x: {"text": x["instruction"] + "\n" + x["response"]})
 
-    # 4. Training arguments
+    # training arguments
     training_args = TrainingArguments(
         output_dir="./mistral-lora-finetuned",
         per_device_train_batch_size=2,
@@ -68,7 +68,7 @@ def main():
         report_to="none"
     )
 
-    # 5. SFT Trainer
+    # SFT Trainer
     trainer = SFTTrainer(
         model=model,
         train_dataset=dataset,
@@ -76,10 +76,10 @@ def main():
         args=training_args
     )
 
-    # 6. Start training
+    # start training
     logger.info("Starting Mistral-7B LoRA fine-tuning...")
     trainer.train()
-    logger.info("Training finished!")
+    logger.info("Training finished, thanks UnknownMan!")
 
 if __name__ == "__main__":
     main()
