@@ -1,21 +1,36 @@
+<div align="center">
+
 # Mistral-7B LoRA Fine-Tuning
 
-Repository ini berisi skrip untuk fine-tuning model **Mistral-7B** menggunakan **LoRA** dengan dataset Wazuh.
+<em>Repository ini berisi skrip untuk fine-tuning model **Mistral-7B** menggunakan **LoRA** dengan dataset Wazuh.</em>
 
-## Struktur Folder
+<img src="https://img.shields.io/github/license/unknownman77/mistral-wazuh-optimization?style=flat&logo=opensourceinitiative&logoColor=white&color=0080ff" alt="license">
+<img src="https://img.shields.io/github/last-commit/unknownman77/mistral-wazuh-optimization?style=flat&logo=git&logoColor=white&color=0080ff" alt="last-commit">
+<img src="https://img.shields.io/github/languages/top/unknownman77/mistral-wazuh-optimization?style=flat&color=0080ff" alt="repo-top-language">
+<img src="https://img.shields.io/github/languages/count/unknownman77/mistral-wazuh-optimization?style=flat&color=0080ff" alt="repo-language-count">
 
-- `train_mistral_lora.py` : skrip training utama
-- `data/logdata_wazuh_smart.jsonl` : dataset training
-- `logs/` : folder log (akan dibuat otomatis)
-- `mistral-lora-finetuned/` : checkpoint model (akan dibuat otomatis)
-- `requirements.txt` : daftar library Python
-- `setup_env.sh` : skrip opsional untuk setup environment
+<em>Tech Stack:</em>
+
+<img src="https://img.shields.io/badge/Markdown-000000.svg?style=flat&logo=Markdown&logoColor=white" alt="Markdown">
+<img src="https://img.shields.io/badge/tqdm-FFC107.svg?style=flat&logo=tqdm&logoColor=black" alt="tqdm">
+<img src="https://img.shields.io/badge/GNU%20Bash-4EAA25.svg?style=flat&logo=GNU-Bash&logoColor=white" alt="GNU%20Bash">
+<img src="https://img.shields.io/badge/FastAPI-009688.svg?style=flat&logo=FastAPI&logoColor=white" alt="FastAPI">
+<img src="https://img.shields.io/badge/NumPy-013243.svg?style=flat&logo=NumPy&logoColor=white" alt="NumPy">
+<br>
+<img src="https://img.shields.io/badge/Docker-2496ED.svg?style=flat&logo=Docker&logoColor=white" alt="Docker">
+<img src="https://img.shields.io/badge/Python-3776AB.svg?style=flat&logo=Python&logoColor=white" alt="Python">
+<img src="https://img.shields.io/badge/SciPy-8CAAE6.svg?style=flat&logo=SciPy&logoColor=white" alt="SciPy">
+<img src="https://img.shields.io/badge/Pydantic-E92063.svg?style=flat&logo=Pydantic&logoColor=white" alt="Pydantic">
+<img src="https://img.shields.io/badge/YAML-CB171E.svg?style=flat&logo=YAML&logoColor=white" alt="YAML">
+
+</div>
+<br>
 
 ## Setup
 
 1. Clone repo ini
 ```bash
-git clone <repo-url>
+git clone https://github.com/unknownman77/mistral-wazuh-optimization.git
 cd mistral-wazuh-optimization
 ```
 
@@ -65,7 +80,7 @@ http://<server-ip>:7070
 - Gunakan versi yang stabil agar docker build tidak error.
 ```
 
-### Struktur final GitHub-ready
+### Struktur File
 ```bash
 mistral-wazuh-optimization/
 ├── Dockerfile
@@ -80,7 +95,21 @@ mistral-wazuh-optimization/
 ├── setup_env.sh
 ├── accelerate_config.yaml
 ├── data/
+│   └── dataset
 ├── logs/
 ├── eval/
+├── template/
+│   └── index.html
+├── static/
+│   └── style.css
 └── mistral-lora-finetuned/ (di .gitignore)
 ```
+
+### Penjelasan File
+
+- `train_mistral_lora.py` : skrip training utama
+- `data/logdata_wazuh_smart.jsonl` : dataset training
+- `logs/` : folder log (akan dibuat otomatis)
+- `mistral-lora-finetuned/` : checkpoint model (akan dibuat otomatis)
+- `requirements.txt` : daftar library Python
+- `setup_env.sh` : skrip opsional untuk setup environment
