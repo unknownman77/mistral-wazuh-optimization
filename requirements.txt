@@ -1,17 +1,17 @@
 # Core ML libraries
-torch==2.3.0
+torch
 torchvision>=0.17.0
 torchaudio>=2.2.0
 
 # Transformers ecosystem
-transformers==4.44.2
+transformers
 protobuf
-accelerate==0.33.0
-peft==0.12.0
-bitsandbytes>=0.41.0
+accelerate
+peft
+bitsandbytes
 
 # Dataset handling
-datasets>=2.14.0
+datasets
 safetensors>=0.4.0
 
 # Tokenization
