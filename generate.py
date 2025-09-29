@@ -26,7 +26,7 @@ base_model_path = "mistralai/Mistral-7B-v0.1"
 latest_checkpoint_path = get_latest_checkpoint()
 
 logger.info(f"Loading tokenizer from {latest_checkpoint_path}...")
-tokenizer = AutoTokenizer.from_pretrained(latest_checkpoint_path, use_fast=False)
+tokenizer = AutoTokenizer.from_pretrained(latest_checkpoint_path, use_fast=False, token="TOKEN_HERE")
 tokenizer.pad_token = tokenizer.eos_token
 
 logger.info(f"Loading base model from {base_model_path}...")
@@ -44,8 +44,7 @@ logger.info(f"Applying LoRA adapters from checkpoint {latest_checkpoint_path}...
 with open(os.path.join(latest_checkpoint_path, "adapter_config.json"), "r") as f:
     lora_config_dict = json.load(f)
 
-# Use the dictionary to create a PeftConfig object, filtering out unexpected arguments
-peft_config = PeftConfig.from_dict(lora_config_dict)
+peft_config = PeftConfig.from_pretrained(latest_checkpoint_path)
 
 model = PeftModel.from_pretrained(model, latest_checkpoint_path, config=peft_config)
 model.eval()
