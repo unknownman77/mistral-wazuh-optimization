@@ -7,7 +7,6 @@ from peft import PeftModel, PeftConfig
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-HUGGINGFACE_TOKEN = os.environ.get("HUGGING_FACE_HUB_TOKEN")
 
 def get_latest_checkpoint(checkpoint_root="mistral-lora-finetuned"):
     """
@@ -21,12 +20,11 @@ def get_latest_checkpoint(checkpoint_root="mistral-lora-finetuned"):
     logger.info(f"Using latest checkpoint: {latest}")
     return latest
 
-# Load the base model and tokenizer
 base_model_path = "mistralai/Mistral-7B-v0.1"
 latest_checkpoint_path = get_latest_checkpoint()
 
 logger.info(f"Loading tokenizer from {latest_checkpoint_path}...")
-tokenizer = AutoTokenizer.from_pretrained(latest_checkpoint_path, use_fast=False, token="HUGGINGFACE_TOKEN")
+tokenizer = AutoTokenizer.from_pretrained(latest_checkpoint_path, use_fast=False)
 tokenizer.pad_token = tokenizer.eos_token
 
 logger.info(f"Loading base model from {base_model_path}...")
@@ -34,13 +32,10 @@ model = AutoModelForCausalLM.from_pretrained(
     base_model_path,
     device_map="auto",
     torch_dtype=torch.float16,
-    token="HUGGINGFACE_TOKEN"
 )
 
-# Load the LoRA adapters by reading the config file and passing it to the PeftConfig class
 logger.info(f"Applying LoRA adapters from checkpoint {latest_checkpoint_path}...")
 
-# Read the adapter_config.json file
 with open(os.path.join(latest_checkpoint_path, "adapter_config.json"), "r") as f:
     lora_config_dict = json.load(f)
 
