@@ -1,15 +1,43 @@
 import os
-from transformers import AutoTokenizer, AutoModelForCausalLM
+import logging
 import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
+from peft import PeftModel
 
-MODEL_PATH = os.environ.get('INFER_MODEL', 'mistral-lora-finetuned/checkpoint-18750')
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, use_fast=False)
+def get_latest_checkpoint(checkpoint_root="mistral-lora-finetuned"):
+    """
+    Finds the latest checkpoint folder based on the checkpoint number.
+    """
+    checkpoints = [d for d in os.listdir(checkpoint_root) if d.startswith("checkpoint-")]
+    if not checkpoints:
+        raise FileNotFoundError(f"No checkpoints found in {checkpoint_root}")
+    checkpoints.sort(key=lambda x: int(x.split("-")[1]))
+    latest = os.path.join(checkpoint_root, checkpoints[-1])
+    logger.info(f"Using latest checkpoint: {latest}")
+    return latest
+
+# Load the base model and tokenizer
+base_model_path = "mistralai/Mistral-7B-v0.1"
+latest_checkpoint_path = get_latest_checkpoint()
+
+logger.info(f"Loading tokenizer from {latest_checkpoint_path}...")
+tokenizer = AutoTokenizer.from_pretrained(latest_checkpoint_path, use_fast=False)
+tokenizer.pad_token = tokenizer.eos_token
+
+logger.info(f"Loading base model from {base_model_path}...")
 model = AutoModelForCausalLM.from_pretrained(
-    MODEL_PATH,
-    device_map='auto',
+    base_model_path,
+    device_map="auto",
     torch_dtype=torch.float16
 )
+
+# Load the LoRA adapters
+logger.info(f"Applying LoRA adapters from checkpoint {latest_checkpoint_path}...")
+model = PeftModel.from_pretrained(model, latest_checkpoint_path)
+model.eval()
 
 def make_prompt(log_text):
     return f"""### Instruction:
