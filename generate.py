@@ -1,8 +1,9 @@
 import os
 import logging
 import torch
+import json
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from peft import PeftModel
+from peft import PeftModel, PeftConfig
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -36,9 +37,17 @@ model = AutoModelForCausalLM.from_pretrained(
     token="TOKEN_HERE"
 )
 
-# Load the LoRA adapters
+# Load the LoRA adapters by reading the config file and passing it to the PeftConfig class
 logger.info(f"Applying LoRA adapters from checkpoint {latest_checkpoint_path}...")
-model = PeftModel.from_pretrained(model, latest_checkpoint_path)
+
+# Read the adapter_config.json file
+with open(os.path.join(latest_checkpoint_path, "adapter_config.json"), "r") as f:
+    lora_config_dict = json.load(f)
+
+# Use the dictionary to create a PeftConfig object, filtering out unexpected arguments
+peft_config = PeftConfig.from_dict(lora_config_dict)
+
+model = PeftModel.from_pretrained(model, latest_checkpoint_path, config=peft_config)
 model.eval()
 
 def make_prompt(log_text):
