@@ -5,6 +5,7 @@ torchaudio>=2.2.0
 
 # Transformers ecosystem
 transformers==4.44.2
+protobuf
 accelerate==0.33.0
 peft==0.12.0
 bitsandbytes>=0.41.0
