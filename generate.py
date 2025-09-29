@@ -6,6 +6,7 @@ from peft import PeftModel
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+HUGGINGFACE_TOKEN = os.environ.get("TOKEN_HERE")
 
 def get_latest_checkpoint(checkpoint_root="mistral-lora-finetuned"):
     """
@@ -32,6 +33,7 @@ model = AutoModelForCausalLM.from_pretrained(
     base_model_path,
     device_map="auto",
     torch_dtype=torch.float16
+    token=TOKEN_HERE
 )
 
 # Load the LoRA adapters
