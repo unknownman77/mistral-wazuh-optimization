@@ -32,7 +32,7 @@ logger.info(f"Loading base model from {base_model_path}...")
 model = AutoModelForCausalLM.from_pretrained(
     base_model_path,
     device_map="auto",
-    torch_dtype=torch.float16
+    torch_dtype=torch.float16,
     token=TOKEN_HERE
 )
 
