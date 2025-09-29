@@ -46,28 +46,14 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-## Training
-```bash
-accelerate launch train_mistral_lora.py
-
-Dataset: data/logdata_wazuh_smart.jsonl
-Output checkpoint: mistral-lora-finetuned/
-Logs: logs/
-```
-
 ## Deploy Web App dengan Docker
 
 ### 1. Build docker image:
 ```bash
-docker-compose build
+docker-compose up --build -d
 ```
 
-### 2. Jalankan container:
-```bash
-docker-compose up
-```
-
-### 3. Akses Web App:
+### 2. Akses Web App:
 ```bash
 http://<server-ip>:7070
 
