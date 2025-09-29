@@ -7,7 +7,7 @@ from peft import PeftModel, PeftConfig
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-HUGGINGFACE_TOKEN = os.environ.get("TOKEN_HERE")
+HUGGINGFACE_TOKEN = os.environ.get("HUGGING_FACE_HUB_TOKEN")
 
 def get_latest_checkpoint(checkpoint_root="mistral-lora-finetuned"):
     """
@@ -26,7 +26,7 @@ base_model_path = "mistralai/Mistral-7B-v0.1"
 latest_checkpoint_path = get_latest_checkpoint()
 
 logger.info(f"Loading tokenizer from {latest_checkpoint_path}...")
-tokenizer = AutoTokenizer.from_pretrained(latest_checkpoint_path, use_fast=False, token="TOKEN_HERE")
+tokenizer = AutoTokenizer.from_pretrained(latest_checkpoint_path, use_fast=False, token="HUGGING_FACE_HUB_TOKEN")
 tokenizer.pad_token = tokenizer.eos_token
 
 logger.info(f"Loading base model from {base_model_path}...")
@@ -34,7 +34,7 @@ model = AutoModelForCausalLM.from_pretrained(
     base_model_path,
     device_map="auto",
     torch_dtype=torch.float16,
-    token="TOKEN_HERE"
+    token="HUGGING_FACE_HUB_TOKEN"
 )
 
 # Load the LoRA adapters by reading the config file and passing it to the PeftConfig class
