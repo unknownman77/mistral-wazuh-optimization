@@ -33,7 +33,7 @@ model = AutoModelForCausalLM.from_pretrained(
     base_model_path,
     device_map="auto",
     torch_dtype=torch.float16,
-    token=TOKEN_HERE
+    token="TOKEN_HERE"
 )
 
 # Load the LoRA adapters
